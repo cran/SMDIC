@@ -31,20 +31,22 @@ head(mutmatrix.example)[,1:6]
 #prepare data for following analysis.
 cellmatrix<-GetExampleData("cellmatrix") # obtain example result from real rasult: cell abundance matrix from real data.
 mutmatrix<-GetExampleData("mutmatrix")# select mutmatrix example result from real result: a binary mutations matrix
-mutcell<-mutcorcell(cell = cellmatrix,mutmatrix = mutmatrix,fisher.adjust = TRUE)
+#mutcell<-mutcorcell(cell = cellmatrix,mutmatrix = mutmatrix,fisher.adjust = TRUE) ## perform the function `mutcorcell`.
 
 ## ------------------------------------------------------------------------
+mutcell<-GetExampleData("mutcell") #get the result of the `mutcorcell` function
 #view first ten rows and six colmns of mutcell matrix.
 mutcell$mut_cell[1:6,1:6]
 #mutcell$mut_cell_p
 #mutcell$mut_cell_fdr
+#mutcell$mut_cell_cellresponses
 
 ## ----echo=TRUE-----------------------------------------------------------
 summary<-mutcellsummary(mutcell =mutcell,mutmatrix = mutmatrix,cellmatrix = cellmatrix)# The summary have four columns.The first column are gene names,the second column are the cells driven by the gene,the third column are the number of cells driven by the gene,the fourth column are mutation rates of gene.
 head(summary)
 
 ## ------------------------------------------------------------------------
-gene2cellsummary(gene="TP53",method="xCell",mutcell = mutcell) #a matrix shows the short name, full name, pvalue, fdr of the cells driven by a somatic mutation
+gene2cellsummary(gene="TP53",method="xCell",mutcell = mutcell) #a matrix shows the short name, full name, pvalue, fdr, sigtype of the cells driven by a somatic mutation
 
 ## ----fig.height=6, fig.width=8-------------------------------------------
 library(pheatmap)

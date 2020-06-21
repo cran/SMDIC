@@ -27,7 +27,7 @@ mutcorcell(
 \item{fisher.adjust}{Logical,tell if corrects p-values}
 }
 \value{
-A list of three matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene; two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene.
+A list of four matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene; two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene; a character matrix which shows the cell responses of the immune cells driven by somatic mutant gene.
 }
 \description{
 Function `mutcorcell` identifies somatic mutation-driven immune cells by comparing the cell abundance matrix and binary mutations matrix.

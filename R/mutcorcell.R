@@ -6,7 +6,7 @@
 #' @param nperms Number of permutations used by SAM to estimate False Discovery Rates
 #' @param fisher.cutoff False Discovery Rate(fisher.adjust=TRUR) or P-Value(fisher.adjust=FALSE) cutoff for Fisher's exact test
 #' @param fisher.adjust Logical,tell if corrects p-values
-#' @return A list of three matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene; two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene.
+#' @return A list of four matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene; two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene; a character matrix which shows the cell responses of the immune cells driven by somatic mutant gene.
 #' @importFrom samr SAM
 #' @importFrom stats fisher.test
 #' @importFrom stats p.adjust
@@ -34,6 +34,9 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
   mut_cell_fdr<-matrix(0,nrow = nrow(mutmatrix),ncol = nrow(cellmatrix))
   rownames(mut_cell_fdr)<-rownames(mutmatrix)
   colnames(mut_cell_fdr)<-rownames(cellmatrix)
+  mut_cell_cellresponses<-matrix(0,nrow = nrow(mutmatrix),ncol = nrow(cellmatrix))
+  rownames(mut_cell_cellresponses)<-rownames(mutmatrix)
+  colnames(mut_cell_cellresponses)<-rownames(cellmatrix)
   for (mut.no in 1:dim(mutmatrix)[1]) {
     print(paste(mut.no,":the mutation number is",mut.no))
     label<-mutmatrix[mut.no,]+1
@@ -112,7 +115,7 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
         #   next
         # }
         Convictions<-matrix(c(a,c,b,d),nrow = 2,dimnames = list(c("mutation", "notmutation"),c("sample diff", "sample not diff")))
-        fisher_test<-fisher.test(Convictions)
+        fisher_test<-fisher.test(Convictions,alternative = "greater")
         p<-c(p,fisher_test$p.value)
       }
     }else{
@@ -127,7 +130,7 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
       #   next
       # }
       Convictions<-matrix(c(a,c,b,d),nrow = 2,dimnames = list(c("mutation", "notmutation"),c("sample diff", "sample not diff")))
-      fisher_test<-fisher.test(Convictions,alternative = "greater")
+      fisher_test<-fisher.test(Convictions,alternative = "two.sided")
       p<-fisher_test$p.value
     }
 
@@ -136,6 +139,8 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
         print(as.character(sig.all))
         mut_cell[mut.no,as.character(sig.all)]<-1
         mut_cell_p[mut.no,as.character(sig.all)]<-p
+        mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.up)]<-"up"
+        mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.down)]<-"down"
       }else{
         next
       }
@@ -149,6 +154,8 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
         mut_cell_fdr[mut.no,rownames(zscore.genesets.cutofffisher)]<-fdr
         p<-p[which(fdr<fisher.cutoff)]
         mut_cell_p[mut.no,rownames(zscore.genesets.cutofffisher)]<-p
+        mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.up)]<-"up"
+        mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.down)]<-"down"
       }else{
         zscore.genesets.cutofffisher<-zscore.genesets.sigpath[which(p<fisher.cutoff),]
         p<-p[which(p<fisher.cutoff)]
@@ -158,6 +165,8 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
         fdr<-p.adjust(p,method = "fdr")
         fdr<-fdr[which(p<fisher.cutoff)]
         mut_cell_fdr[mut.no,rownames(zscore.genesets.cutofffisher)]<-fdr
+        mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.up)]<-"up"
+        mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.down)]<-"down"
       }
 
     }
@@ -170,7 +179,9 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
   mut_cell_p<-mut_cell_p[,delcol]
   mut_cell_fdr<-mut_cell_fdr[delrow,]
   mut_cell_fdr<-mut_cell_fdr[,delcol]
-  return(list(mut_cell=mut_cell,mut_cell_p=mut_cell_p,mut_cell_fdr=mut_cell_fdr))
+  mut_cell_cellresponses<-mut_cell_cellresponses[delrow,]
+  mut_cell_cellresponses<-mut_cell_cellresponses[,delcol]
+  return(list(mut_cell=mut_cell,mut_cell_p=mut_cell_p,mut_cell_fdr=mut_cell_fdr,mut_cell_cellresponses=mut_cell_cellresponses))
 }
 
 #' @title mutcellsummary
@@ -210,7 +221,7 @@ mutcellsummary <- function(mutcell,mutmatrix,cellmatrix) {
 #' @param gene Somatic mutant gene name
 #' @param method Method must be one of "xCell","ssGSEA" and "CIBERSORT".
 #' @param mutcell The result of `mutcorcell` funtion.
-#' @return A matrix shows the short name, full name, pvalue, fdr of the cells driven by a somatic mutation
+#' @return A matrix shows the short name, full name, pvalue, fdr, cell responses(up or down) of the cells driven by a somatic mutation.
 #' @export
 #' @examples
 #' mutcell<-GetExampleData("mutcell") # The result of `mutcorcell` funtion.
@@ -218,10 +229,12 @@ mutcellsummary <- function(mutcell,mutmatrix,cellmatrix) {
 gene2cellsummary <- function(gene,method="xCell",mutcell) {
   mutcellp = mutcell$mut_cell_p
   mutcellfdr=mutcell$mut_cell_fdr
+  mutcellcellresponses=mutcell$mut_cell_cellresponses
   mutcell = mutcell$mut_cell
   cellname<-names(which(mutcell[gene,]==1))
-  resmatrix<-matrix(0,length(cellname),5)
-  colnames(resmatrix)<-c("gene","cell name","Full name","pvalue","fdr")
+  resmatrix<-matrix(0,length(cellname),6)
+  resmatrix<-as.data.frame(resmatrix)
+  colnames(resmatrix)<-c("gene","cell name","full name","pvalue","fdr","cell responses")
   rownames(resmatrix)<-cellname
   resmatrix[,1]<-gene
   resmatrix[,2]<-cellname
@@ -229,11 +242,14 @@ gene2cellsummary <- function(gene,method="xCell",mutcell) {
     resmatrix[,3]<-cell64[cellname,2]
   }else if(method=="ssGSEA"){
     resmatrix[,3]<-cell24[cellname,2]
-  }else {
+  }else if(method=="CIBERSORT"){
     resmatrix[,3]<-cellname
+  }else{
+    print("method must be one of 'xCell', 'ssGSEA' and 'CIBERSORT'" )
   }
   resmatrix[,4]<-mutcellp[gene,cellname]
   resmatrix[,5]<-mutcellfdr[gene,cellname]
+  resmatrix[,6]<-mutcellcellresponses[gene,cellname]
   return(resmatrix)
 }
 
