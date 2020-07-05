@@ -259,3 +259,4 @@ survcell <- function(gene,mutcell,cellmatrix,surv,method="Multivariate") {
   fit <- survfit(Surv(Survival, Events) ~ group, data = KMdata)
   ggsurvplot(fit,pval = TRUE,data = KMdata)
 }
+

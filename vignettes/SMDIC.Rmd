@@ -94,6 +94,7 @@ mutcell$mut_cell[1:6,1:6]
 #mutcell$mut_cell_p
 #mutcell$mut_cell_fdr
 #mutcell$mut_cell_cellresponses
+dim(mutcell$mut_cell)
 ```
 
 
@@ -121,8 +122,8 @@ Function `plotwaterfal` and `plotinteractions` provides visualization of the mut
 
 ```{r echo=TRUE}
 #file<-"dir" #dir must be an absolute path or the name  relatived to the current working directory.
-#mutoncoplot(maffile = file,mutcell.summary = summary,cellnumcuoff =0)
-#mutinteractions(maffile = file,mutcell.summary = summary,cellnumcuoff =0)
+#plotwaterfall(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
+#plotCoocMutex(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
 ```
 
 ```{r}

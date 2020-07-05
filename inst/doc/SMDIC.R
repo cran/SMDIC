@@ -40,6 +40,7 @@ mutcell$mut_cell[1:6,1:6]
 #mutcell$mut_cell_p
 #mutcell$mut_cell_fdr
 #mutcell$mut_cell_cellresponses
+dim(mutcell$mut_cell)
 
 ## ----echo=TRUE-----------------------------------------------------------
 summary<-mutcellsummary(mutcell =mutcell,mutmatrix = mutmatrix,cellmatrix = cellmatrix)# The summary have four columns.The first column are gene names,the second column are the cells driven by the gene,the third column are the number of cells driven by the gene,the fourth column are mutation rates of gene.
@@ -54,8 +55,8 @@ heatmapcell(gene = "TP53",mutcell = mutcell,cellmatrix = cellmatrix,mutmatrix = 
 
 ## ----echo=TRUE-----------------------------------------------------------
 #file<-"dir" #dir must be an absolute path or the name  relatived to the current working directory.
-#mutoncoplot(maffile = file,mutcell.summary = summary,cellnumcuoff =0)
-#mutinteractions(maffile = file,mutcell.summary = summary,cellnumcuoff =0)
+#plotwaterfall(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
+#plotCoocMutex(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
 
 ## ------------------------------------------------------------------------
 knitr::include_graphics("../inst/plotwaterfall.jpeg")

@@ -43,7 +43,9 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
     if (sum(label==2)<=1) {
       next
     }
+    # perform SAM
     samfit<-SAM(as.matrix(cellmatrix),label,resp.type="Two class unpaired",genenames=rownames(cellmatrix),nperms=nperms,fdr.output = samfdr.cutoff)
+
     if (is.matrix(samfit$siggenes.table$genes.up)) {
       siggene.up<-cbind(samfit$siggenes.table$genes.up[,1],as.numeric(samfit$siggenes.table$genes.up[,7])/100)
     }else{
@@ -60,47 +62,52 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
     if (length(sig.all)==0) {
       next
     }
-    genesets.sigpath<-cellmatrix[sig.all,]
-    zscore.genesets.sigpath<-zscore[sig.all,]
+    cell.sig<-cellmatrix[sig.all,]
+    zscore.cell.sig<-zscore[sig.all,]
     zscore.sigup<-NULL
     zscore.sigdown<-NULL
 
     if (length(sig.up)>1) {
-      zscore.sigup<-zscore.genesets.sigpath[sig.up,]
+      zscore.sigup<-zscore.cell.sig[sig.up,]
       zscore.sigup[zscore.sigup<=2.0]<-0
       zscore.sigup[zscore.sigup>2.0]<-1
     }
     if(length(sig.up)==1){
-      if (is.null(nrow(zscore.genesets.sigpath))) {
-        zscore.sigup<-zscore.genesets.sigpath
+      if (is.null(nrow(zscore.cell.sig))) {
+        zscore.sigup<-zscore.cell.sig
       }else{
-        zscore.sigup<-zscore.genesets.sigpath[sig.up,]
+        zscore.sigup<-zscore.cell.sig[sig.up,]
       }
       zscore.sigup[zscore.sigup<=2.0]<-0
       zscore.sigup[zscore.sigup>2.0]<-1
     }
+
     if (length(sig.down)>1) {
-      zscore.sigdown<-zscore.genesets.sigpath[sig.down,]
+      zscore.sigdown<-zscore.cell.sig[sig.down,]
       zscore.sigdown[zscore.sigdown>=(-2.0)]<-0
       zscore.sigdown[zscore.sigdown< (-2.0)]<-1
     }
     if(length(sig.down)==1){
-      if (is.null(nrow(zscore.genesets.sigpath))) {
-        zscore.sigdown<-zscore.genesets.sigpath
+      if (is.null(nrow(zscore.cell.sig))) {
+        zscore.sigdown<-zscore.cell.sig
       }else{
-        zscore.sigdown<-zscore.genesets.sigpath[sig.down,]
+        zscore.sigdown<-zscore.cell.sig[sig.down,]
       }
       zscore.sigdown[zscore.sigdown>=(-2.0)]<-0
       zscore.sigdown[zscore.sigdown< (-2.0)]<-1
     }
+
     zscore01<-rbind(zscore.sigup,zscore.sigdown)
+
     if (!is.null(nrow(zscore01))) {
       rownames(zscore01)<-c(as.character(sig.up),as.character(sig.down))
     }else{
       names(zscore01)<-c(as.character(sig.up),as.character(sig.down))
     }
+
     mutation<-which(mutmatrix[mut.no,]==1)
     notmutation<-which(mutmatrix[mut.no,]==0)
+
     p<-c()
     if (nrow(zscore01)!=1) {
       for(i in 1:nrow(zscore01)){
@@ -110,10 +117,6 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
         b<-length(intersect(mutation,diffnotsample))
         c<-length(intersect(notmutation,diffsample))
         d<-length(intersect(notmutation,diffnotsample))
-        # if (a<=3|b<=3|c<=3|d<=3) {
-        #   p<-c(p,1)
-        #   next
-        # }
         Convictions<-matrix(c(a,c,b,d),nrow = 2,dimnames = list(c("mutation", "notmutation"),c("sample diff", "sample not diff")))
         fisher_test<-fisher.test(Convictions,alternative = "greater")
         p<-c(p,fisher_test$p.value)
@@ -125,50 +128,54 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
       b<-length(intersect(mutation,diffnotsample))
       c<-length(intersect(notmutation,diffsample))
       d<-length(intersect(notmutation,diffnotsample))
-      # if (a<=3|b<=3|c<=3|d<=3) {
-      #   p<-1
-      #   next
-      # }
       Convictions<-matrix(c(a,c,b,d),nrow = 2,dimnames = list(c("mutation", "notmutation"),c("sample diff", "sample not diff")))
-      fisher_test<-fisher.test(Convictions,alternative = "two.sided")
+      fisher_test<-fisher.test(Convictions,alternative = "greater")
       p<-fisher_test$p.value
     }
 
-    if (length(p)==1) {
+    if (length(p)==1)
+    {
       if (p<fisher.cutoff) {
+        fdr<-p.adjust(p,method = "fdr")
         print(as.character(sig.all))
         mut_cell[mut.no,as.character(sig.all)]<-1
         mut_cell_p[mut.no,as.character(sig.all)]<-p
+        mut_cell_fdr[mut.no,as.character(sig.all)]<-fdr
         mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.up)]<-"up"
         mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.down)]<-"down"
       }else{
+        fdr<-p.adjust(p,method = "fdr")
+        print(as.character(sig.all))
+        mut_cell_fdr[mut.no,sig.all]<-fdr
+        mut_cell_p[mut.no,sig.all]<-p
+        mut_cell[mut.no,as.character(sig.all)]<-0
+        mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.up)]<-"up"
+        mut_cell_cellresponses[mut.no,intersect(as.character(sig.all),sig.down)]<-"down"
         next
       }
-    }else{
-      if (fisher.adjust==TRUE) {
+    }
+    else{
+      if (fisher.adjust==TRUE)
+      {
         fdr<-p.adjust(p,method = "fdr")
-        zscore.genesets.cutofffisher<-zscore.genesets.sigpath[which(fdr<fisher.cutoff),]
-        fdr<-fdr[which(fdr<fisher.cutoff)]
+        mut_cell_fdr[mut.no,sig.all]<-fdr
+        mut_cell_p[mut.no,sig.all]<-p
+        zscore.genesets.cutofffisher<-zscore.cell.sig[which(fdr<fisher.cutoff),]
         print(rownames(zscore.genesets.cutofffisher))
         mut_cell[mut.no,rownames(zscore.genesets.cutofffisher)]<-1
-        mut_cell_fdr[mut.no,rownames(zscore.genesets.cutofffisher)]<-fdr
-        p<-p[which(fdr<fisher.cutoff)]
-        mut_cell_p[mut.no,rownames(zscore.genesets.cutofffisher)]<-p
         mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.up)]<-"up"
         mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.down)]<-"down"
       }else{
-        zscore.genesets.cutofffisher<-zscore.genesets.sigpath[which(p<fisher.cutoff),]
+        fdr<-p.adjust(p,method = "fdr")
+        mut_cell_fdr[mut.no,sig.all]<-fdr
+        mut_cell_p[mut.no,sig.all]<-p
+        zscore.genesets.cutofffisher<-zscore.cell.sig[which(p<fisher.cutoff),]
         p<-p[which(p<fisher.cutoff)]
         print(rownames(zscore.genesets.cutofffisher))
         mut_cell[mut.no,rownames(zscore.genesets.cutofffisher)]<-1
-        mut_cell_p[mut.no,rownames(zscore.genesets.cutofffisher)]<-p
-        fdr<-p.adjust(p,method = "fdr")
-        fdr<-fdr[which(p<fisher.cutoff)]
-        mut_cell_fdr[mut.no,rownames(zscore.genesets.cutofffisher)]<-fdr
         mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.up)]<-"up"
         mut_cell_cellresponses[mut.no,intersect(rownames(zscore.genesets.cutofffisher),sig.down)]<-"down"
       }
-
     }
   }
   delrow<-which(rowSums(mut_cell)!=0)
@@ -183,6 +190,7 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
   mut_cell_cellresponses<-mut_cell_cellresponses[,delcol]
   return(list(mut_cell=mut_cell,mut_cell_p=mut_cell_p,mut_cell_fdr=mut_cell_fdr,mut_cell_cellresponses=mut_cell_cellresponses))
 }
+
 
 #' @title mutcellsummary
 #' @description Function `mutcellsummary` is a generic function used to produce summaries of the results of `mutcorcell` function.
