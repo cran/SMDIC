@@ -1,25 +1,41 @@
 #' @title mutcorcell
 #' @description  Function `mutcorcell` identifies somatic mutation-driven immune cells by comparing the cell abundance matrix and binary mutations matrix.
 #' @param cellmatrix Cell abundance matrix.
-#' @param mutmatrix A binary mutations matrix, in which 1 represents any mutation occurs in a particular gene in a particular sample, otherwise the element is 0.
+#' @param mutmatrix A binary mutations matrix, which can not only come from the maf2matrix function, but also any binary mutations matrix, in which 1 represents any mutation occurs in a particular gene in a particular sample, otherwise the element is 0.
 #' @param samfdr.cutoff False Discovery Rate cutoff for output in significant immune cells
 #' @param nperms Number of permutations used by SAM to estimate False Discovery Rates
-#' @param fisher.cutoff False Discovery Rate(fisher.adjust=TRUR) or P-Value(fisher.adjust=FALSE) cutoff for Fisher's exact test
+#' @param fisher.cutoff False Discovery Rate(fisher.adjust=TRUE) or P-Value(fisher.adjust=FALSE) cutoff for Fisher's exact test
 #' @param fisher.adjust Logical,tell if corrects p-values
-#' @return A list of four matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene; two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene; a character matrix which shows the cell responses of the immune cells driven by somatic mutant gene.
+#' @return A list of four matrices: a binary numerical matrix which shows the immune cells driven by somatic mutant gene;
+#' two numerical matrix which show the pvalue and fdr of the immune cells driven by somatic mutant gene;
+#' a character matrix which shows the cell responses of the immune cells driven by somatic mutant gene.
 #' @importFrom samr SAM
 #' @importFrom stats fisher.test
 #' @importFrom stats p.adjust
 #' @export
 #' @examples
-#' cellmatrix<-GetExampleData("cellmatrix") # Cell abundance matrix
-#' mutmatrix<-GetExampleData("mutmatrix") # A binary mutations matrix
+#' #get cell abundance matrix which is the result of exp2cell function
+#' cellmatrix<-GetExampleData("cellmatrix")
+#'
+#' #get the binary mutations matrix,
+#' mutmatrix<-GetExampleData("mutmatrix")
+#'
+#' #perform the function `mutcorcell`.
 #' mutcell<-mutcorcell(cellmatrix = cellmatrix,mutmatrix = mutmatrix)
+#'
 #' # The summary for somatic mutations are produced by function `mutcellsummary`.
 #' #summary<-mutcellsummary(mutcell = mutcell,mutmatrix = mutmatrix,cellmatrix=cellmatrix)
+#'
 #' # The summary of the immune cells driven by a mutation are produced by function `gene2cellsummary`.
 #' #genecellsummary<-gene2cellsummary(gene="TP53",mutcell=mutcell)
-mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0.05,nperms=100,fisher.cutoff=0.05,fisher.adjust=FALSE) {
+
+mutcorcell <-
+  function(cellmatrix = cellmatrix,
+           mutmatrix = mutmatrix,
+           samfdr.cutoff = 0.05,
+           nperms = 100,
+           fisher.cutoff = 0.05,
+           fisher.adjust = FALSE) {
   ## requireNamespace("samr")|| stop("package samr is required,please install package samr")
   intersample<-intersect(colnames(cellmatrix),colnames(mutmatrix))
   mutmatrix<-mutmatrix[,intersample]
@@ -195,14 +211,21 @@ mutcorcell <- function(cellmatrix=cellmatrix,mutmatrix=mutmatrix,samfdr.cutoff=0
 #' @title mutcellsummary
 #' @description Function `mutcellsummary` is a generic function used to produce summaries of the results of `mutcorcell` function.
 #' @param mutcell The result of `mutcorcell` funtion.
-#' @param mutmatrix A binary mutations,in which 1 represents any mutation occurs in a particular gene in a particular sample, otherwise the element is 0. matrix
+#' @param mutmatrix A binary mutations matrix, which can not only come from the maf2matrix function, but also any binary mutations matrix, in which 1 represents any mutation occurs in a particular gene in a particular sample, otherwise the element is 0.
 #' @param cellmatrix Cell abundance matrix
 #' @return The result summaries have four columns. The first column is somatic mutant gene names, the second column is the immune cell names driven by the somatic mutation, the third column is the number of the immune cell, the fourth column is the mutation rate.
 #' @export
 #' @examples
-#' mutcell<-GetExampleData("mutcell") # The result of `mutcorcell` funtion
-#' cellmatrix<-GetExampleData("cellmatrix") # Cell abundance matrix
+#' # get result of `mutcorcell` funtion
+#' mutcell<-GetExampleData("mutcell")
+#'
+#' #get cell abundance matrix which is the result of exp2cell function
+#' cellmatrix<-GetExampleData("cellmatrix")
+#'
+#' # get the binary mutations matrix
 #' mutmatrix<-GetExampleData("mutmatrix") # A binary mutations matrix
+#'
+#' #perform the function mutcellsummary
 #' summary<-mutcellsummary(mutcell = mutcell,mutmatrix = mutmatrix,cellmatrix=cellmatrix)
 mutcellsummary <- function(mutcell,mutmatrix,cellmatrix) {
   mutcell<-mutcell$mut_cell
@@ -232,9 +255,13 @@ mutcellsummary <- function(mutcell,mutmatrix,cellmatrix) {
 #' @return A matrix shows the short name, full name, pvalue, fdr, cell responses(up or down) of the cells driven by a somatic mutation.
 #' @export
 #' @examples
-#' mutcell<-GetExampleData("mutcell") # The result of `mutcorcell` funtion.
+#' # get the result of `mutcorcell` funtion.
+#' mutcell<-GetExampleData("mutcell")
+#'
+#' # perform the function gene2cellsummary
 #' genecellsummary<-gene2cellsummary(gene="TP53",mutcell=mutcell)
-gene2cellsummary <- function(gene,method="xCell",mutcell) {
+
+gene2cellsummary <- function(gene, method = "xCell", mutcell) {
   mutcellp = mutcell$mut_cell_p
   mutcellfdr=mutcell$mut_cell_fdr
   mutcellcellresponses=mutcell$mut_cell_cellresponses

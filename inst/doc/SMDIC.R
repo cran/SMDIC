@@ -1,70 +1,108 @@
-## ---- include = FALSE----------------------------------------------------
+## ----setup, include = FALSE----------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
-## ----setup---------------------------------------------------------------
-library(SMDIC)
+require(SMDIC)
 
 ## ------------------------------------------------------------------------
+#Flow diagram of SMDIC.
 knitr::include_graphics("../inst/workflow.jpg")
 
 ## ----echo = T, results = 'hide'------------------------------------------
 library(SMDIC)
-library(GSVA)
-exp.example<-GetExampleData("exp.example") # obtain example expression data 
-cellmatrix.example<-exp2cell(exp.example,method="ssGSEA") #Cell abundance matrix,method must be one of "xCell","ssGSEA" and "CIBERSORT".
+#get breast cancer gene expression profile.
+exp.example<-GetExampleData("exp.example")
+
+# perform the exp2cell method. The method must be one of "xCell","ssGSEA" and "CIBERSORT".
+cellmatrix.example<-exp2cell(exp.example,method="ssGSEA")
 
 
 ## ------------------------------------------------------------------------
-#view first six rows and six colmns of cell infiltration score matrix.
-cellmatrix.example[1:6,1:6]
+#get the result of the exp2cell function
+#view the first six rows and six columns of the cell abundance matrix.
+head(cellmatrix.example)
 
 ## ------------------------------------------------------------------------
+# get the path of the mutation annotation file.
+maf <- system.file("extdata","example.maf.gz",package = "SMDIC") 
 
-maf <- system.file("extdata","example.maf.gz",package = "SMDIC") #get path of the mutation annotation file.
-mutmatrix.example<-maf2matrix(maf) 
-head(mutmatrix.example)[,1:6]
+# perform the maf2matrix method.
+mutmatrix.example<-maf2matrix(maffile = maf,percent = 0.01) 
+
+#get the result of the exp2cell function
+#view the first six rows and six columns of the binary mutations matrix
+head(mutmatrix.example)[1:6,1:6]
 
 ## ----import, results = "hide"--------------------------------------------
-#prepare data for following analysis.
-cellmatrix<-GetExampleData("cellmatrix") # obtain example result from real rasult: cell abundance matrix from real data.
-mutmatrix<-GetExampleData("mutmatrix")# select mutmatrix example result from real result: a binary mutations matrix
-#mutcell<-mutcorcell(cell = cellmatrix,mutmatrix = mutmatrix,fisher.adjust = TRUE) ## perform the function `mutcorcell`.
+# get breast cancer cell abundance matrix, which can be the result of exp2cell function.
+cellmatrix<-GetExampleData("cellmatrix") 
 
-## ------------------------------------------------------------------------
-mutcell<-GetExampleData("mutcell") #get the result of the `mutcorcell` function
-#view first ten rows and six colmns of mutcell matrix.
+# get breast cancer binary mutations matrix, which can be the result of maf2matrix function.
+mutmatrix<-GetExampleData("mutmatrix")
+
+# perform the function `mutcorcell`.
+mutcell<-mutcorcell(cellmatrix= cellmatrix,mutmatrix = mutmatrix,fisher.adjust = TRUE) 
+
+#get the result of the `mutcorcell` function
+mutcell<-GetExampleData("mutcell")
+
+# the binary numerical matrix which shows the immune cells driven by somatic mutant gene.
 mutcell$mut_cell[1:6,1:6]
+
+#the numerical matrix which shows the pvalue of the immune cells driven by a somatic mutant gene
 #mutcell$mut_cell_p
+
+#the numerical matrix which show the fdr of the immune cells driven by somatic mutant gene
 #mutcell$mut_cell_fdr
+
+#the character matrix which shows the cell responses of the immune cells driven by a somatic mutant gene."up" means up-regulation, "down" means down-regulation, and "0" means no significant adjustment relationship
 #mutcell$mut_cell_cellresponses
-dim(mutcell$mut_cell)
 
 ## ----echo=TRUE-----------------------------------------------------------
-summary<-mutcellsummary(mutcell =mutcell,mutmatrix = mutmatrix,cellmatrix = cellmatrix)# The summary have four columns.The first column are gene names,the second column are the cells driven by the gene,the third column are the number of cells driven by the gene,the fourth column are mutation rates of gene.
+# perform the function mutcellsummary
+summary<-mutcellsummary(mutcell =mutcell,mutmatrix = mutmatrix,cellmatrix = cellmatrix)
+
+# get the result of the mutcellsummary function
 head(summary)
 
 ## ------------------------------------------------------------------------
-gene2cellsummary(gene="TP53",method="xCell",mutcell = mutcell) #a matrix shows the short name, full name, pvalue, fdr, sigtype of the cells driven by a somatic mutation
+# perform the function gene2cellsummary
+gene2cellsummary(gene="TP53",method="xCell",mutcell = mutcell) 
 
 ## ----fig.height=6, fig.width=8-------------------------------------------
-library(pheatmap)
+# load dependent package.
+require(pheatmap)
+
+# plot significant up-regulation or down-regulation cells heat map specific for breast cancer
 heatmapcell(gene = "TP53",mutcell = mutcell,cellmatrix = cellmatrix,mutmatrix = mutmatrix)
 
 ## ----echo=TRUE-----------------------------------------------------------
-#file<-"dir" #dir must be an absolute path or the name  relatived to the current working directory.
-#plotwaterfall(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
-#plotCoocMutex(maffile = file,mutcell.summary = summary,cellnumcuoff =4)
+#maf<-"dir" 
+#tips: dir is the name of the mutation annotation file (MAF) format data. It must be an absolute path or the name relative to the current working directory.
 
-## ------------------------------------------------------------------------
+#plot the waterfall for mutation genes which drive immune cells
+#plotwaterfall(maffile = maf,mutcell.summary = summary,cellnumcuoff =4)
+
+#plot the co-occurrence and mutual exclusivity plots for mutation genes that drive immune cells.
+#plotCoocMutex(maffile = maf,mutcell.summary = summary,cellnumcuoff =4)
+
+#view the result of the plotwaterfall function
 knitr::include_graphics("../inst/plotwaterfall.jpeg")
-knitr::include_graphics("../inst/plotinteractions.jpeg")
+
+#view the result of the plotCoocMutex function
+knitr::include_graphics("../inst/plotCoocMutex.jpeg")
 
 ## ------------------------------------------------------------------------
-mutcell<-GetExampleData("mutcell") # The result of `mutcorcell` function.
-cellmatrix<-GetExampleData("cellmatrix") # Cell abundance matrix
-surv<-GetExampleData("surv") # The survival data
-survcell(gene ="TP53",mutcell=mutcell,cellmatrix=cellmatrix,surv=surv)
+# get the result of `mutcorcell` function.
+mutcell<-GetExampleData("mutcell") 
+
+# get the result of `exp2cell` function.
+cellmatrix<-GetExampleData("cellmatrix") 
+
+#get the survival data, the first column is the sample name, the second column is the survival time, and the third is the survival event.
+surv<-GetExampleData("surv")
+
+#draw Kaplan–Meier survival curves
+survcell(gene ="TP53",mutcell=mutcell,cellmatrix=cellmatrix,surv=surv,palette = c("#E7B800", "#2E9FDF"))
 

@@ -10,7 +10,7 @@ rawEnrichmentAnalysis <- function(expr, signatures, genes, parallel.sz = 4, para
   expr <- expr[shared.genes, ]
   if (dim(expr)[1] < 5000) {
     print(paste("ERROR: not enough genes"))
-    return - 1
+    return(-1)
   }
 
   # Transform the expression to rank
@@ -424,9 +424,18 @@ CIBERSORT <- function(sig_matrix, mixture_file, perm=0, QN=TRUE){
 
 
 #' @title exp2cell
-#' @description Function `exp2cell` use gene expression profiles to quantify cell abundance matrix. `exp2cell` provides three methods for estimating the relative infiltration abundance of different cell types in the tumor microenvironment (TME), which including xCell, ssGSEA estimated method proposed by Şenbabaoğlu et al. and CIBERSORT.
-#' @param exp The gene expression data set. A matrix with row names as symbols and columns as samples. Gene expression profiles were used to quantify cell abundance matrix.
+#' @description Function `exp2cell` use gene expression profiles to quantify cell abundance matrix.
+#' `exp2cell` provides three methods for estimating the relative infiltration abundance of different cell types in the tumor microenvironment (TME),
+#' which including xCell, ssGSEA estimated method proposed by Şenbabaoğlu et al. and CIBERSORT.
+#' @param exp The gene expression data set. A matrix with row names as symbols and columns as samples.
+#' Gene expression profiles were used to quantify cell abundance matrix.
 #' @param method Method must be one of "xCell", "ssGSEA" and "CIBERSORT".
+#' @param QN Quantile normalization of input mixture (default = TRUE)
+#' @param perm No. permutations; set to >=100 to calculate p-values (default = 100)
+#' @param kcdf By default, kcdf="Gaussian" which is suitable when input expression values are continuous,
+#' such as microarray fluorescent units in logarithmic scale, RNA-seq log-CPMs, log-RPKMs or log-TPMs.
+#' When input expression values are integer counts, such as those derived from RNA-seq experiments,
+#' then this argument should be set to kcdf="Poisson".
 #' @importFrom  GSVA gsva
 #' @importFrom preprocessCore normalize.quantiles
 #' @importFrom e1071 svm
@@ -442,12 +451,15 @@ CIBERSORT <- function(sig_matrix, mixture_file, perm=0, QN=TRUE){
 #' @return Cell abundance matrix.
 #' @references 1. Aaron, M, Newman, et al. Robust enumeration of cell subsets from tissue expression profiles.[J]. Nature Methods, 2015.
 #' 2. Aran D , Hu Z , Butte A J . xCell: digitally portraying the tissue cellular heterogeneity landscape[J]. Genome Biology, 2017, 18(1):220.
-#' 3. Şenbabaoğlu, Yasin, Gejman R S , Winer A G , et al. Tumor immune microenvironment characterization in clear cell renal cell carcinoma identifies prognostic and immunotherapeutically relevant messenger RNA signatures[J]. Genome biology, 2016, 17(1).
+#' 3. Senbabaoglu, Yasin, Gejman R S , Winer A G , et al. Tumor immune microenvironment characterization in clear cell renal cell carcinoma identifies prognostic and immunotherapeutically relevant messenger RNA signatures[J]. Genome biology, 2016, 17(1).
 #' @export
 #' @examples
-#' exp.example<-GetExampleData("exp.example") # gene expression profiles
+#' #get breast cancer gene expression profile.
+#' exp.example<-GetExampleData("exp.example")
+#'
+#' #perform the exp2cell method. Method must be one of "xCell","ssGSEA" and "CIBERSORT".
 #' cellmatrix<-exp2cell(exp=exp.example,method="ssGSEA") #cell abundance matrix
-exp2cell <- function(exp,method="xCell") {
+exp2cell <- function(exp,method="xCell",perm=100,QN=TRUE,kcdf=c("Gaussian", "Poisson", "none")) {
   if (method=="xCell") {
     ## requireNamespace("xCell")|| stop("package xCell is required,please install package xCell")
     cellmatrix<-xCellAnalysis(exp)
@@ -457,7 +469,7 @@ exp2cell <- function(exp,method="xCell") {
     cellmatrix<-gsva(as.matrix(exp),immunelist,method='ssgsea',kcdf='Gaussian',abs.ranking=TRUE)
   }else if (method=="CIBERSORT"){
     lm22path<-system.file('extdata', 'LM22.txt', package = 'SMDIC')
-    cellmatrix_pre<-CIBERSORT(lm22path,exp,perm = 100,QN = TRUE)
+    cellmatrix_pre<-CIBERSORT(lm22path,exp,perm = perm,QN = QN)
     cellmatrix_T<-cellmatrix_pre$proportions
     cellmatrix_T<-cellmatrix_T[,1:22]
     cellmatrix<-t(cellmatrix_T)

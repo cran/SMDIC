@@ -2,5 +2,8 @@
 #' @description With the use of functions in this packages, users could identify the immune cells driven by somatic mutations in tumor microenvironment.
 #' @name SMDIC-package
 #' @aliases SMDIC-package
+#' @import RColorBrewer
+#' @import survminer
+#' @import backports
 #' @docType package
 NULL
