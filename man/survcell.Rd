@@ -48,7 +48,7 @@ survcell(
 Kaplan–Meier curves
 }
 \description{
-Function `survcell` draws Kaplan Meier curves for survival in the above-median and below-median groups for cell risk score. The cell risk score is calaulated by the weighted mean of cells driven by a gene mutation, where the  weight of cells is estimated by the "Univariate" or "Multivariate" cox.
+Function `survcell` draws Kaplan–Meier curves for survival in the above-median and below-median groups for cell risk score. The cell risk score is calaulated by the weighted mean of cells driven by a gene mutation, where the  weight of cells is estimated by the "Univariate" or "Multivariate" cox.
 }
 \examples{
 # get the result of `mutcorcell` function.
@@ -60,6 +60,6 @@ cellmatrix<-GetExampleData("cellmatrix")
 # get survival data
 surv<-GetExampleData("surv")
 
-#draw Kaplan Meier curves
+#draw Kaplan–Meier curves
 survcell(gene ="TP53",mutcell=mutcell,cellmatrix=cellmatrix,surv=surv)
 }

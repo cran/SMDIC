@@ -1,15 +1,15 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 require(SMDIC)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #Flow diagram of SMDIC.
 knitr::include_graphics("../inst/workflow.jpg")
 
-## ----echo = T, results = 'hide'------------------------------------------
+## ----echo = T, results = 'hide'-----------------------------------------------
 library(SMDIC)
 #get breast cancer gene expression profile.
 exp.example<-GetExampleData("exp.example")
@@ -18,12 +18,12 @@ exp.example<-GetExampleData("exp.example")
 cellmatrix.example<-exp2cell(exp.example,method="ssGSEA")
 
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #get the result of the exp2cell function
 #view the first six rows and six columns of the cell abundance matrix.
 head(cellmatrix.example)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # get the path of the mutation annotation file.
 maf <- system.file("extdata","example.maf.gz",package = "SMDIC") 
 
@@ -34,7 +34,7 @@ mutmatrix.example<-maf2matrix(maffile = maf,percent = 0.01)
 #view the first six rows and six columns of the binary mutations matrix
 head(mutmatrix.example)[1:6,1:6]
 
-## ----import, results = "hide"--------------------------------------------
+## ----import, results = "hide"-------------------------------------------------
 # get breast cancer cell abundance matrix, which can be the result of exp2cell function.
 cellmatrix<-GetExampleData("cellmatrix") 
 
@@ -59,25 +59,25 @@ mutcell$mut_cell[1:6,1:6]
 #the character matrix which shows the cell responses of the immune cells driven by a somatic mutant gene."up" means up-regulation, "down" means down-regulation, and "0" means no significant adjustment relationship
 #mutcell$mut_cell_cellresponses
 
-## ----echo=TRUE-----------------------------------------------------------
+## ----echo=TRUE----------------------------------------------------------------
 # perform the function mutcellsummary
 summary<-mutcellsummary(mutcell =mutcell,mutmatrix = mutmatrix,cellmatrix = cellmatrix)
 
 # get the result of the mutcellsummary function
 head(summary)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # perform the function gene2cellsummary
 gene2cellsummary(gene="TP53",method="xCell",mutcell = mutcell) 
 
-## ----fig.height=6, fig.width=8-------------------------------------------
+## ----fig.height=6, fig.width=8------------------------------------------------
 # load dependent package.
 require(pheatmap)
 
 # plot significant up-regulation or down-regulation cells heat map specific for breast cancer
 heatmapcell(gene = "TP53",mutcell = mutcell,cellmatrix = cellmatrix,mutmatrix = mutmatrix)
 
-## ----echo=TRUE-----------------------------------------------------------
+## ----echo=TRUE----------------------------------------------------------------
 #maf<-"dir" 
 #tips: dir is the name of the mutation annotation file (MAF) format data. It must be an absolute path or the name relative to the current working directory.
 
@@ -93,7 +93,7 @@ knitr::include_graphics("../inst/plotwaterfall.jpeg")
 #view the result of the plotCoocMutex function
 knitr::include_graphics("../inst/plotCoocMutex.jpeg")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # get the result of `mutcorcell` function.
 mutcell<-GetExampleData("mutcell") 
 

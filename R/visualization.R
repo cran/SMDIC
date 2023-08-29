@@ -25,8 +25,7 @@
 #'
 #' #dir is the name of mutation annotation file (MAF) format data.
 #' #It must be an absolute path or the name relatived to the current working directory.
-#' # maf<-"dir"
-#'
+#' maf<-system.file("extdata", "example.maf.gz", package = "SMDIC") #MAF file
 #' # mutcell.summary is the result of function mutcellsummary
 #'
 #' #plot the waterfall for mutation genes which drive immune cells
@@ -68,7 +67,7 @@ plotwaterfall <- function(maffile,mutcell.summary,cellnumcuoff=3,fontSize = 0.8,
 #'
 #' #dir is the name of mutation annotation file (MAF) format data.
 #' #It must be an absolute path or the name relatived to the current working directory.
-#' maf<-"dir"
+#' maf<-system.file("extdata", "example.maf.gz", package = "SMDIC") #MAF file
 #' #plot the co-occurrence and mutual exclusivity plots for mutation genes which drive immune cells.
 #' \donttest{plotCoocMutex(maffile = maf,mutcell.summary = summary,cellnumcuoff =0)}
 plotCoocMutex <- function(maffile,mutcell.summary,cellnumcuoff=3,fontSize = 0.8) {
@@ -277,7 +276,7 @@ getCoefExpCluster<-function(coxRes,subprof2,subprof){
 
 
 #' @title survcell
-#' @description Function `survcell` draws Kaplan Meier curves for survival in the above-median and below-median groups for cell risk score. The cell risk score is calaulated by the weighted mean of cells driven by a gene mutation, where the  weight of cells is estimated by the "Univariate" or "Multivariate" cox.
+#' @description Function `survcell` draws Kaplan–Meier curves for survival in the above-median and below-median groups for cell risk score. The cell risk score is calaulated by the weighted mean of cells driven by a gene mutation, where the  weight of cells is estimated by the "Univariate" or "Multivariate" cox.
 #' @param gene Somatic mutant gene name
 #' @param mutcell The result of `mutcorcell` function
 #' @param cellmatrix Cell abundance matrix
@@ -309,7 +308,7 @@ getCoefExpCluster<-function(coxRes,subprof2,subprof){
 #' # get survival data
 #' surv<-GetExampleData("surv")
 #'
-#' #draw Kaplan Meier curves
+#' #draw Kaplan–Meier curves
 #' survcell(gene ="TP53",mutcell=mutcell,cellmatrix=cellmatrix,surv=surv)
 survcell <-
   function(gene,

@@ -47,8 +47,7 @@ summary<-mutcellsummary(mutcell = mutcell,mutmatrix = mutmatrix,cellmatrix=cellm
 
 #dir is the name of mutation annotation file (MAF) format data.
 #It must be an absolute path or the name relatived to the current working directory.
-# maf<-"dir"
-
+maf<-system.file("extdata", "example.maf.gz", package = "SMDIC") #MAF file
 # mutcell.summary is the result of function mutcellsummary
 
 #plot the waterfall for mutation genes which drive immune cells

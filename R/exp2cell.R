@@ -37,7 +37,7 @@ rawEnrichmentAnalysis <- function(expr, signatures, genes, parallel.sz = 4, para
   rownames(agg) <- agg[, 1]
   scores <- agg[, -1]
 
-  scores
+  return(scores)
 }
 
 transformScores <- function(scores, fit.vals, scale=TRUE) {
@@ -451,7 +451,7 @@ CIBERSORT <- function(sig_matrix, mixture_file, perm=0, QN=TRUE){
 #' @return Cell abundance matrix.
 #' @references 1. Aaron, M, Newman, et al. Robust enumeration of cell subsets from tissue expression profiles.[J]. Nature Methods, 2015.
 #' 2. Aran D , Hu Z , Butte A J . xCell: digitally portraying the tissue cellular heterogeneity landscape[J]. Genome Biology, 2017, 18(1):220.
-#' 3. Senbabaoglu, Yasin, Gejman R S , Winer A G , et al. Tumor immune microenvironment characterization in clear cell renal cell carcinoma identifies prognostic and immunotherapeutically relevant messenger RNA signatures[J]. Genome biology, 2016, 17(1).
+#' 3. Şenbabaoğlu, Yasin, Gejman R S , Winer A G , et al. Tumor immune microenvironment characterization in clear cell renal cell carcinoma identifies prognostic and immunotherapeutically relevant messenger RNA signatures[J]. Genome biology, 2016, 17(1).
 #' @export
 #' @examples
 #' #get breast cancer gene expression profile.
